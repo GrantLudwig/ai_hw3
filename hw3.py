@@ -18,6 +18,88 @@ def readFile(fileName):
             iList.append(int(line))
     return (iList, bagSize)
 
+#TODO Better
+def probChoice(choices):
+    selectionSpace = {}
+    current = 0
+    for choice, weight in choices:
+        if weight > 0:
+            selectionSpace[current] = choice
+            current += weight
+    rand = random.uniform(0, current)
+    for key in sorted(selectionSpace.keys()):
+        if rand < key:
+            return choice
+        choice = selectionSpace[key]
+    return None
+
+def fitness(size, chromos):
+    fitness = []
+    #Fitness
+    for parent in chromos:
+        sum = 0
+        for i in range(len(parent)):
+            if parent[i]:
+                sum += iList[i]
+        fitness.append(sum)
+    for i in range(len(fitness)):
+        fitness[i] = abs(size - fitness[i])
+    return min()
+
+def runEvolution(chromos, iList, size):
+    fitness = []
+    #Fitness
+    for parent in chromos:
+        sum = 0
+        for i in range(len(parent)):
+            if parent[i]:
+                sum += iList[i]
+        fitness.append(sum)
+    for i in range(len(fitness)):
+        fitness[i] = abs(size - fitness[i])
+    #TODO correct return
+    if 0 in fitness:
+        print('Found')
+        return []
+    #Probability choice
+    #TODO better prob
+    for i in range(len(fitness)):
+        fitness[i] = 1/fitness[i]
+    #build tuples
+    parentWeightList = []
+    for i in range(len(chromos)):
+        parentWeightList.append((chromos[i],fitness[i]))
+    pairs = []
+    #num pairs = 3
+    for _ in range(3):
+        p1 = None
+        p2 = None
+        while p1 == None:
+            p1 = probChoice(parentWeightList)
+        while p2 == None:
+            p2 = probChoice(parentWeightList)
+        pairs.append((p1, p2))
+    #Cross
+    children = []
+    for p1, p2 in pairs:
+        child1 = []
+        child2 = []
+        randIndex = random.randrange(1, len(p1)-1)
+        for i in range(0,randIndex):
+            child1.append(p1[i])
+            child2.append(p2[i])
+        for i in range(randIndex, len(p1)):
+            child1.append(p2[i])
+            child2.append(p1[i])
+        children.append(child1)
+        children.append(child2)
+    #mutation
+    for child in children:
+        if bool(random.getrandbits(1)):
+            randIndex = random.randrange(0, len(child))
+            child[randIndex] = not child[randIndex]
+    return children
+
 def generateChromosomes(length):
     chromo = []
     for _ in range(length):
@@ -26,28 +108,12 @@ def generateChromosomes(length):
 
 def geneticAlg(iList, size):
     parents = []
-    fitness = []
-    for _ in range(10):
-        parents.append(generateChromosomes(len(iList)))
-    #Fitness
-    for parent in parents:
-        sum = 0
-        for i in range(len(parent)):
-            if parent[i]:
-                sum += iList[i]
-        fitness.append(sum)
-    print(fitness)
-    for i in range(len(fitness)):
-        fitness[i] = abs(size - fitness[i])
-    print(fitness)
-    #Choose best
-    parentIList = []
+    #6 parents
     for _ in range(6):
-        index = fitness.index(min(f for f in fitness if f > 0))
-        parentIList.append(index)
-        fitness[index] = -1
-    print(parentIList)
-    #Cross
+        parents.append(generateChromosomes(len(iList)))
+    for _ in range(6):
+        parents = runEvolution(parents, iList, size)
+
     
 
 #Driver code
