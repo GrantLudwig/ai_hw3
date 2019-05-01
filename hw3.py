@@ -2,8 +2,19 @@
 #Grant Ludwig
 #5/3/19
 
+#Arg order:
+    #1: number of iterations
+    #2: number of chromosomes generated
+    #3: file with the knapsack size and items
+#File format:
+    #First line must be knapsack size
+        #must be positive integer
+    #All lines after are sizes of items
+        #must be positive integers
+
 import sys
 import random
+import math
 
 def readFile(fileName):
     firstLine = True
@@ -17,6 +28,34 @@ def readFile(fileName):
         else:
             iList.append(int(line))
     return (iList, bagSize)
+
+def printChromo(chromo):
+    output = ''
+    for gene in chromo:
+        if gene:
+            output += '1'
+        else:
+            output += '0'
+    print(output)
+
+def generateChromosomes(length):
+    chromo = []
+    for _ in range(length):
+        chromo.append(bool(random.getrandbits(1)))
+    return chromo
+
+def fitness(size, chromos, iList):
+    fitness = []
+    #Fitness
+    for parent in chromos:
+        sum = 0
+        for i in range(len(parent)):
+            if parent[i]:
+                sum += iList[i]
+        fitness.append(sum)
+    for i in range(len(fitness)):
+        fitness[i] = abs(size - fitness[i])
+    return fitness.index(min(fitness))
 
 def probChoice(choices):
     selectionSpace = {}
@@ -32,29 +71,7 @@ def probChoice(choices):
         choice = selectionSpace[key]
     return None
 
-def printChromo(chromo):
-    output = ''
-    for gene in chromo:
-        if gene:
-            output += '1'
-        else:
-            output += '0'
-    print(output)
-
-def fitness(size, chromos, iList):
-    fitness = []
-    #Fitness
-    for parent in chromos:
-        sum = 0
-        for i in range(len(parent)):
-            if parent[i]:
-                sum += iList[i]
-        fitness.append(sum)
-    for i in range(len(fitness)):
-        fitness[i] = abs(size - fitness[i])
-    return fitness.index(min(fitness))
-
-def runEvolution(chromos, iList, size):
+def runEvolution(chromos, iList, size, numPar):
     fitness = []
     #Fitness
     for parent in chromos:
@@ -76,8 +93,9 @@ def runEvolution(chromos, iList, size):
     for i in range(len(chromos)):
         parentWeightList.append((chromos[i],fitness[i]))
     pairs = []
-    #num pairs = 3
-    for _ in range(3):
+    floorNumPar = math.floor(numPar/2) #needed incase numPar is odd
+    #Get pairs
+    for _ in range(floorNumPar):
         p1 = None
         p2 = None
         while p1 == None:
@@ -85,7 +103,7 @@ def runEvolution(chromos, iList, size):
         while p2 == None:
             p2 = probChoice(parentWeightList)
         pairs.append((p1, p2))
-    #Cross
+    #Cross/create children
     children = []
     for p1, p2 in pairs:
         child1 = []
@@ -104,25 +122,23 @@ def runEvolution(chromos, iList, size):
         if bool(random.getrandbits(1)):
             randIndex = random.randrange(0, len(child))
             child[randIndex] = not child[randIndex]
+    #Get extra chromosome if still need more
+        #This will happen when the parents amount is odd
+    while floorNumPar < math.ceil(numPar/2):
+        children.append(generateChromosomes(len(iList)))
+        floorNumPar += 1
     return (children, False)
 
-def generateChromosomes(length):
-    chromo = []
-    for _ in range(length):
-        chromo.append(bool(random.getrandbits(1)))
-    return chromo
-
-def geneticAlg(iList, size, runs):
+def geneticAlg(iList, size, runs, numP):
     parents = []
-    #6 parents
-    for _ in range(6):
+    for _ in range(numP):
         parents.append(generateChromosomes(len(iList)))
     for i in range(runs):
-        print('\nRun: ', i+1)
+        print('\nIteration: ', i+1)
         print('Chromosomes:')
         for parent in parents:
             printChromo(parent)
-        parents, complete = runEvolution(parents, iList, size)
+        parents, complete = runEvolution(parents, iList, size, numP)
         if complete:
             return parents
     index = fitness(size, parents, iList)
@@ -131,14 +147,20 @@ def geneticAlg(iList, size, runs):
 
 #Driver code
 numRuns = int(sys.argv[1])
-fileName = sys.argv[2]
+numParents = int(sys.argv[2])
+fileName = sys.argv[3]
 itemList, sackSize = readFile(fileName)
-list = geneticAlg(itemList, sackSize, numRuns)
+list = geneticAlg(itemList, sackSize, numRuns, numParents)
 print('\nFinal Chromosome:')
 printChromo(list)
-print('\nBagsize:', sackSize)
+print('\nBag size:', sackSize)
 output = ''
+sum = 0
 for i in range(len(list)):
     if list[i]:
         output += str(itemList[i]) + ' '
-print(output)
+        sum += itemList[i]
+if sum == sackSize:
+    print('Found solution:', output)
+else:
+    print('Found close solution:', output)
