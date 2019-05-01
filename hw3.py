@@ -138,9 +138,9 @@ itemList, sackSize = readFile(fileName)
 list = geneticAlg(itemList, sackSize, numRuns)
 print('\nFinal Chromosome:')
 printChromo(list)
+print('\nBagsize:', sackSize)
 output = ''
 for i in range(len(list)):
     if list[i]:
         output += str(itemList[i]) + ' '
-print('\n')
 print(output)
