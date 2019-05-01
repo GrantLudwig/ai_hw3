@@ -33,7 +33,7 @@ def probChoice(choices):
         choice = selectionSpace[key]
     return None
 
-def fitness(size, chromos):
+def fitness(size, chromos, iList):
     fitness = []
     #Fitness
     for parent in chromos:
@@ -44,7 +44,7 @@ def fitness(size, chromos):
         fitness.append(sum)
     for i in range(len(fitness)):
         fitness[i] = abs(size - fitness[i])
-    return min()
+    return fitness.index(min(fitness))
 
 def runEvolution(chromos, iList, size):
     fitness = []
@@ -59,8 +59,7 @@ def runEvolution(chromos, iList, size):
         fitness[i] = abs(size - fitness[i])
     #TODO correct return
     if 0 in fitness:
-        print('Found')
-        return []
+        return (chromos[fitness.index(min(fitness))], True)
     #Probability choice
     #TODO better prob
     for i in range(len(fitness)):
@@ -98,7 +97,7 @@ def runEvolution(chromos, iList, size):
         if bool(random.getrandbits(1)):
             randIndex = random.randrange(0, len(child))
             child[randIndex] = not child[randIndex]
-    return children
+    return (children, False)
 
 def generateChromosomes(length):
     chromo = []
@@ -111,12 +110,22 @@ def geneticAlg(iList, size):
     #6 parents
     for _ in range(6):
         parents.append(generateChromosomes(len(iList)))
-    for _ in range(6):
-        parents = runEvolution(parents, iList, size)
-
+    for i in range(40):
+        print('\n Run: ', i+1)
+        parents, complete = runEvolution(parents, iList, size)
+        if complete:
+            return parents
+    index = fitness(size, parents, iList)
+    return parents[index]
     
 
 #Driver code
 fileName = sys.argv[1]
 itemList, sackSize = readFile(fileName)
-geneticAlg(itemList, sackSize)
+list = geneticAlg(itemList, sackSize)
+output = ''
+for i in range(len(list)):
+    if list[i]:
+        output += str(itemList[i]) + ' '
+print('\n')
+print(output)
