@@ -18,7 +18,6 @@ def readFile(fileName):
             iList.append(int(line))
     return (iList, bagSize)
 
-#TODO Better
 def probChoice(choices):
     selectionSpace = {}
     current = 0
@@ -66,14 +65,13 @@ def runEvolution(chromos, iList, size):
         fitness.append(sum)
     for i in range(len(fitness)):
         fitness[i] = abs(size - fitness[i])
-    #TODO correct return
+    #Found solution
     if 0 in fitness:
         return (chromos[fitness.index(min(fitness))], True)
     #Probability choice
-    #TODO better prob
     for i in range(len(fitness)):
         fitness[i] = 1/fitness[i]
-    #build tuples
+        #build tuples
     parentWeightList = []
     for i in range(len(chromos)):
         parentWeightList.append((chromos[i],fitness[i]))
