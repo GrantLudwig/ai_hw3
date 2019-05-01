@@ -33,6 +33,15 @@ def probChoice(choices):
         choice = selectionSpace[key]
     return None
 
+def printChromo(chromo):
+    output = ''
+    for gene in chromo:
+        if gene:
+            output += '1'
+        else:
+            output += '0'
+    print(output)
+
 def fitness(size, chromos, iList):
     fitness = []
     #Fitness
@@ -105,13 +114,16 @@ def generateChromosomes(length):
         chromo.append(bool(random.getrandbits(1)))
     return chromo
 
-def geneticAlg(iList, size):
+def geneticAlg(iList, size, runs):
     parents = []
     #6 parents
     for _ in range(6):
         parents.append(generateChromosomes(len(iList)))
-    for i in range(40):
-        print('\n Run: ', i+1)
+    for i in range(runs):
+        print('\nRun: ', i+1)
+        print('Chromosomes:')
+        for parent in parents:
+            printChromo(parent)
         parents, complete = runEvolution(parents, iList, size)
         if complete:
             return parents
@@ -120,9 +132,12 @@ def geneticAlg(iList, size):
     
 
 #Driver code
-fileName = sys.argv[1]
+numRuns = int(sys.argv[1])
+fileName = sys.argv[2]
 itemList, sackSize = readFile(fileName)
-list = geneticAlg(itemList, sackSize)
+list = geneticAlg(itemList, sackSize, numRuns)
+print('\nFinal Chromosome:')
+printChromo(list)
 output = ''
 for i in range(len(list)):
     if list[i]:
